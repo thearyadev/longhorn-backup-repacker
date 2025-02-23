@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/pierrec/lz4/v4"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/pierrec/lz4/v4"
 )
 
 type Superblock struct {
@@ -247,5 +248,6 @@ func main() {
 	fmt.Printf("Total size of backup: %d\n", superblock.TotalBlocks*superblock.BlockSize)
 	fmt.Println("Truncating block file")
 	outfile_descriptor.Truncate(int64(superblock.TotalBlocks * superblock.BlockSize))
-	fmt.Println("Done")
+	fmt.Println("Restore Complete. Filesystem can now be mounted")
+	fmt.Printf("Run 'sudo mount -o loop %s /mointpoint' to mount the image", *outfile) 
 }
