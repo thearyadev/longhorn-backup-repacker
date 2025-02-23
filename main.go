@@ -5,14 +5,29 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/pierrec/lz4"
+	"github.com/pierrec/lz4/v4"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
+	"encoding/binary"
 )
+type Superblock struct {
+    TotalBlocks int
+    BlockSize   int
+}
+
+type superblockRaw struct {
+    SInodesCount     uint32
+    SBlocksCount     uint32
+    SRBlocksCount    uint32
+    SFreeBlocksCount uint32
+    SFreeInodesCount uint32
+    SFirstDataBlock  uint32
+    SLogBlockSize    uint32
+}
 
 type Block struct {
 	Offset   int64  `json:"Offset"`
@@ -50,6 +65,25 @@ func findVolumeBackupPath(backupStorePath string, volumeName string) (string, er
 		return "", fmt.Errorf("could not find backup for %s", volumeName)
 	}
 	return matches[0], nil
+}
+func readSuperblock(f *os.File) (Superblock, error) {
+    const superblockOffset = 1024
+
+    _, err := f.Seek(superblockOffset, 0)
+    if err != nil {
+        return Superblock{}, err
+    }
+
+    var raw superblockRaw
+    err = binary.Read(f, binary.LittleEndian, &raw)
+    if err != nil {
+        return Superblock{}, err
+    }
+
+    return Superblock{
+        TotalBlocks: int(raw.SBlocksCount),
+        BlockSize:   int(1024 << raw.SLogBlockSize),
+    }, nil
 }
 
 func decompressLZ4(data []byte) ([]byte, error) {
@@ -175,25 +209,42 @@ func main() {
 	}
 	for _, backup := range volumeBackup.Backups {
 		fmt.Printf("Backup %s\n", backup.Identifier)
-		for _, block := range backup.Blocks {
-			fmt.Printf("Processing Block %d %s\n", block.Offset, block.Checksum)
+		totalBlocks := len(backup.Blocks)
+
+		for i, block := range backup.Blocks {
+			percentage := float64(i+1) / float64(totalBlocks) * 100
+			fmt.Printf("[%.2f%%] Processing Block %s {offset=%d}\n", percentage, block.Checksum, block.Offset)
+
 			blockPath, err := resolveBlockPath(volumeBackup.BackupPath, block.Checksum)
 			if err != nil {
 				fmt.Printf("Failed to resolve block %s\n", block.Checksum)
 				os.Exit(1)
 			}
+
 			blockData, err := os.ReadFile(blockPath)
 			if err != nil {
 				fmt.Printf("Failed to read block %s\n", block.Checksum)
 				os.Exit(1)
 			}
+
 			blockData, err = decompressLZ4(blockData)
 			if err != nil {
 				fmt.Printf("Failed to decompress block %s\n", block.Checksum)
 				os.Exit(1)
 			}
+
 			writeBlockToBuffer(blockData, block.Offset, outfile_descriptor)
 		}
 		fmt.Printf("\n")
 	}
+	superblock, err := readSuperblock(outfile_descriptor)
+	if err != nil {
+		fmt.Printf("Failed to read superblock. This tool only works with ext4 filesystems. The raw filesystem has been created, but you may need to resize the filesystem or extend the physical data with zeroes.\n")
+		os.Exit(1)
+	}
+	fmt.Printf("Superblock: %d blocks of size %d\n", superblock.TotalBlocks, superblock.BlockSize)
+	fmt.Printf("Total size of backup: %d\n", superblock.TotalBlocks * superblock.BlockSize)
+	fmt.Println("Truncating block file")
+	outfile_descriptor.Truncate(int64(superblock.TotalBlocks * superblock.BlockSize))
+	fmt.Println("Done")
 }
