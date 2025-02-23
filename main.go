@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,21 +13,21 @@ import (
 	"sort"
 	"strconv"
 	"time"
-	"encoding/binary"
 )
+
 type Superblock struct {
-    TotalBlocks int
-    BlockSize   int
+	TotalBlocks int
+	BlockSize   int
 }
 
 type superblockRaw struct {
-    SInodesCount     uint32
-    SBlocksCount     uint32
-    SRBlocksCount    uint32
-    SFreeBlocksCount uint32
-    SFreeInodesCount uint32
-    SFirstDataBlock  uint32
-    SLogBlockSize    uint32
+	SInodesCount     uint32
+	SBlocksCount     uint32
+	SRBlocksCount    uint32
+	SFreeBlocksCount uint32
+	SFreeInodesCount uint32
+	SFirstDataBlock  uint32
+	SLogBlockSize    uint32
 }
 
 type Block struct {
@@ -67,23 +68,23 @@ func findVolumeBackupPath(backupStorePath string, volumeName string) (string, er
 	return matches[0], nil
 }
 func readSuperblock(f *os.File) (Superblock, error) {
-    const superblockOffset = 1024
+	const superblockOffset = 1024
 
-    _, err := f.Seek(superblockOffset, 0)
-    if err != nil {
-        return Superblock{}, err
-    }
+	_, err := f.Seek(superblockOffset, 0)
+	if err != nil {
+		return Superblock{}, err
+	}
 
-    var raw superblockRaw
-    err = binary.Read(f, binary.LittleEndian, &raw)
-    if err != nil {
-        return Superblock{}, err
-    }
+	var raw superblockRaw
+	err = binary.Read(f, binary.LittleEndian, &raw)
+	if err != nil {
+		return Superblock{}, err
+	}
 
-    return Superblock{
-        TotalBlocks: int(raw.SBlocksCount),
-        BlockSize:   int(1024 << raw.SLogBlockSize),
-    }, nil
+	return Superblock{
+		TotalBlocks: int(raw.SBlocksCount),
+		BlockSize:   int(1024 << raw.SLogBlockSize),
+	}, nil
 }
 
 func decompressLZ4(data []byte) ([]byte, error) {
@@ -243,7 +244,7 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("Superblock: %d blocks of size %d\n", superblock.TotalBlocks, superblock.BlockSize)
-	fmt.Printf("Total size of backup: %d\n", superblock.TotalBlocks * superblock.BlockSize)
+	fmt.Printf("Total size of backup: %d\n", superblock.TotalBlocks*superblock.BlockSize)
 	fmt.Println("Truncating block file")
 	outfile_descriptor.Truncate(int64(superblock.TotalBlocks * superblock.BlockSize))
 	fmt.Println("Done")
