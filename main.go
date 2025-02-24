@@ -188,7 +188,18 @@ func main() {
 
 	if _, err := os.Stat(*outfile); err == nil {
 		fmt.Printf("Output file %s already exists\n", *outfile)
-		os.Exit(1)
+		fmt.Printf("Do you want to overwrite it? [y/n] ")
+		var response string
+		_, err := fmt.Scanln(&response)
+		if err != nil {
+			fmt.Printf("Failed to read input\n")
+			os.Exit(1)
+		}
+		if response != "y" {
+			fmt.Printf("Aborting\n")
+			os.Exit(1)
+		}
+		os.Remove(*outfile)
 	}
 	outfile_descriptor, err := os.Create(*outfile)
 	defer outfile_descriptor.Close()
