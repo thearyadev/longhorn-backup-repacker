@@ -15,15 +15,19 @@ Longhorn stores backups as incremental block-segments to optimize storage throug
 ## Installation
 
 Choose one of these methods:
+1. **Install from the AUR:**
+   ```bash
+   yay -S longhorn-backup-repacker
+   ```
 
-1. **Build from source:**
+2. **Build from source:**
    ```bash
    git clone https://github.com/thearyadev/longhorn-backup-repacker
    cd longhorn-backup-repacker
    # Build instructions here
    ```
 
-2. **Download pre-built binary:**
+3. **Download pre-built binary:**
    Visit the [releases page](https://github.com/thearyadev/longhorn-backup-repacker/releases)
 
 ## Usage
