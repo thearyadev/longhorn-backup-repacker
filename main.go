@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/binary"
 	"encoding/json"
 	"flag"
@@ -90,6 +91,15 @@ func readSuperblock(f *os.File) (Superblock, error) {
 
 func decompressLZ4(data []byte) ([]byte, error) {
 	r := lz4.NewReader(bytes.NewReader(data))
+	return io.ReadAll(r)
+}
+
+func decompressGZIP(data []byte) ([]byte, error) {
+	r, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
 	return io.ReadAll(r)
 }
 
@@ -224,11 +234,11 @@ func main() {
 		totalBlocks := len(backup.Blocks)
 		for i, block := range backup.Blocks {
 			percentage := float64(i+1) / float64(totalBlocks) * 100
-			fmt.Printf("[pass %d/%d] [%.2f%%] Block %s* {offset=%d}\n",
+			fmt.Printf("[pass %d/%d] [%.2f%%] Block %s* {offset=%d} {%s}\n",
 				i_backup+1,
 				len(volumeBackup.Backups),
 				percentage,
-				block.Checksum[0:20], block.Offset)
+				block.Checksum[0:20], block.Offset, backup.Compression)
 
 			blockPath, err := resolveBlockPath(volumeBackup.BackupPath, block.Checksum)
 			if err != nil {
@@ -242,7 +252,19 @@ func main() {
 				os.Exit(1)
 			}
 
-			blockData, err = decompressLZ4(blockData)
+			if backup.Compression == "lz4" {
+				blockData, err = decompressLZ4(blockData)
+				if err != nil {
+					fmt.Printf("Failed to decompress block %s\n", block.Checksum)
+					os.Exit(1)
+				}
+			} else if backup.Compression == "gzip" {
+				blockData, err = decompressGZIP(blockData)
+				if err != nil {
+					fmt.Printf("Failed to decompress block %s\n", block.Checksum)
+					os.Exit(1)
+				}
+			}
 			if err != nil {
 				fmt.Printf("Failed to decompress block %s\n", block.Checksum)
 				os.Exit(1)
