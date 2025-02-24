@@ -220,13 +220,15 @@ func main() {
 		fmt.Printf("Failed to read backups for %s\n", *target)
 		os.Exit(1)
 	}
-	for _, backup := range volumeBackup.Backups {
-		fmt.Printf("Backup %s\n", backup.Identifier)
+	for i_backup, backup := range volumeBackup.Backups {
 		totalBlocks := len(backup.Blocks)
-
 		for i, block := range backup.Blocks {
 			percentage := float64(i+1) / float64(totalBlocks) * 100
-			fmt.Printf("[%.2f%%] Processing Block %s {offset=%d}\n", percentage, block.Checksum, block.Offset)
+			fmt.Printf("[pass %d/%d] [%.2f%%] Block %s* {offset=%d}\n",
+				i_backup+1,
+				len(volumeBackup.Backups),
+				percentage,
+				block.Checksum[0:20], block.Offset)
 
 			blockPath, err := resolveBlockPath(volumeBackup.BackupPath, block.Checksum)
 			if err != nil {
@@ -248,7 +250,6 @@ func main() {
 
 			writeBlockToBuffer(blockData, block.Offset, outfile_descriptor)
 		}
-		fmt.Printf("\n")
 	}
 	superblock, err := readSuperblock(outfile_descriptor)
 	if err != nil {
@@ -260,5 +261,5 @@ func main() {
 	fmt.Println("Truncating block file")
 	outfile_descriptor.Truncate(int64(superblock.TotalBlocks * superblock.BlockSize))
 	fmt.Println("Restore Complete. Filesystem can now be mounted")
-	fmt.Printf("Run 'sudo mount -o loop %s /mointpoint' to mount the image", *outfile) 
+	fmt.Printf("Run 'sudo mount -o loop %s /mointpoint' to mount the image", *outfile)
 }
