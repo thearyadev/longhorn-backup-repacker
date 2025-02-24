@@ -1,9 +1,14 @@
 package main
 
 import (
+	"compress/gzip"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/pierrec/lz4/v4"
 )
 
 func TestFindVolumeBackupPath(t *testing.T) {
@@ -162,5 +167,76 @@ func TestWriteBlockToBuffer(t *testing.T) {
 
 	if string(readData) != string(testData) {
 		t.Errorf("Expected %s, got %s", string(testData), string(readData))
+	}
+}
+
+func TestDecompression(t *testing.T) {
+	test_string := "hello world"
+	r := strings.NewReader(test_string)
+
+	pr, pw := io.Pipe()
+	zw := lz4.NewWriter(pw)
+	defer zw.Close()
+
+	go func() {
+		_, _ = io.Copy(zw, r)
+		_ = zw.Close()
+		_ = pw.Close()
+	}()
+
+	compressed_data_lz4, _ := io.ReadAll(pr)
+
+	pr2, pw2 := io.Pipe()
+	zw2 := gzip.NewWriter(pw2)
+	r2 := strings.NewReader(test_string)
+
+	go func() {
+		_, _ = io.Copy(zw2, r2)
+		zw2.Close()
+		pw2.Close()
+	}()
+
+	compressed_data_gzip, _ := io.ReadAll(pr2)
+
+	t.Log(string(compressed_data_gzip))
+	tests := []struct {
+		name          string
+		data          []byte
+		compression   string
+		expectedError bool
+	}{
+		{
+			name:          "Decompress LZ4",
+			data:          compressed_data_lz4,
+			compression:   "lz4",
+			expectedError: false,
+		},
+
+		{
+			name:          "Decompress GZIP",
+			data:          compressed_data_gzip,
+			compression:   "gzip",
+			expectedError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			decompressed_data, err := decompressLZ4(tt.data)
+			if tt.compression == "gzip" {
+				decompressed_data, err = decompressGZIP(tt.data)
+			} else if tt.compression == "lz4" {
+				decompressed_data, err = decompressLZ4(tt.data)
+			}
+			if tt.expectedError && err == nil {
+				t.Error("Expected error but got none")
+			}
+			if !tt.expectedError && err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if string(decompressed_data) != test_string {
+				t.Errorf("Expected '%s', got '%s'", test_string, string(decompressed_data))
+			}
+		})
 	}
 }
