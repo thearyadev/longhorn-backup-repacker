@@ -17,6 +17,12 @@ import (
 	"github.com/pierrec/lz4/v4"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 type Superblock struct {
 	TotalBlocks int
 	BlockSize   int
@@ -183,11 +189,17 @@ func getVolumes(backupStorePath string) ([]string, error) {
 }
 
 func main() {
+	versionFlag := flag.Bool("version", false, "Print version")
 	listVolumes := flag.Bool("list-volumes", false, "List volumes")
 	backupRoot := flag.String("backup-root", "", "Backup root directory")
 	target := flag.String("target", "", "Backup target")
 	outfile := flag.String("outfile", "", "Output file")
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", version, commit, date)
+		os.Exit(0)
+	}
 
 	if *backupRoot == "" || *target == "" || *outfile == "" {
 		flag.Usage()

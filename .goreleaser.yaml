@@ -1,0 +1,5 @@
+builds:
+  - ldflags:
+      - -X main.version={{.Version}}
+      - -X main.commitSHA={{.FullCommit}}
+      - -X main.buildDate={{.Date}}
