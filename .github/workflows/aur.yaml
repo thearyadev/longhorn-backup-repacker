@@ -36,9 +36,9 @@ jobs:
           }
 
           package() {
-              cd "$pkgname-$pkgver"
-              sudo install -Dm755 "$pkgname" "/usr/bin/$pkgname"
-              sudo install -Dm644 LICENSE "/usr/share/licenses/$pkgname/LICENSE"
+              cd "\$pkgname-\$pkgver"
+              sudo install -Dm755 "\$pkgname" "/usr/bin/\$pkgname"
+              sudo install -Dm644 LICENSE "/usr/share/licenses/\$pkgname/LICENSE"
           }
 
 
