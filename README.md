@@ -10,7 +10,7 @@ Longhorn stores backups as incremental block-segments to optimize storage throug
 
 - Converts Longhorn backup segments into a single raw disk image
 - Works with locally mounted filesystems
-- Supports `lz4` compression format
+- Supports `lz4` and `gzip` compression formats
 
 ## Installation
 
@@ -52,11 +52,7 @@ Flags:
    - Primary support for `ext4` filesystem
    - Other filesystems may result in apparently corrupted devices (fixable by zero-filling or filesystem shrinking)
 
-2. **Compression Support:**
-   - Currently supports `lz4` decompression only
-   - `gzip` support is in development
-
-3. **Transport Protocols:**
+2. **Transport Protocols:**
    - Does not support NFS or S3
    - Works only with locally mounted filesystems
 
