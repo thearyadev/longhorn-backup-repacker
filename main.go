@@ -174,7 +174,16 @@ func writeBlockToBuffer(blockData []byte, offset int64, fileDiscriptor *os.File)
 	fileDiscriptor.Write(blockData)
 }
 
+func getVolumes(backupStorePath string) ([]string, error) {
+	matches, err := filepath.Glob(filepath.Join(backupStorePath, "volumes", "**", "**", "*"))
+	if err != nil {
+		return nil, err
+	}
+	return matches, nil
+}
+
 func main() {
+	listVolumes := flag.Bool("list-volumes", false, "List volumes")
 	backupRoot := flag.String("backup-root", "", "Backup root directory")
 	target := flag.String("target", "", "Backup target")
 	outfile := flag.String("outfile", "", "Output file")
@@ -186,6 +195,18 @@ func main() {
 	}
 
 	backupStorePath := filepath.Join(*backupRoot, "backupstore")
+
+	if *listVolumes {
+		volumes, err := getVolumes(backupStorePath)
+		if err != nil {
+			fmt.Printf("Failed to list volumes\n")
+			os.Exit(1)
+		}
+		for _, volume := range volumes {
+			fmt.Println(volume)
+		}
+		os.Exit(0)
+	}
 	if _, err := os.Stat(backupStorePath); os.IsNotExist(err) {
 		fmt.Printf("Backup root %s does not contain backupstore\n", *backupRoot)
 		os.Exit(1)
