@@ -1,6 +1,7 @@
 name: aur
 on:
   release:
+    types: [published]
 jobs:
   aur-publish:
     runs-on: ubuntu-latest
