@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Clone AUR PKGBUILD Repo
-        run: "git clone https://aur.archlinux.org/thearyadev/longhorn-backup-repacker.git lbr"
+        run: "git clone https://aur.archlinux.org/longhorn-backup-repacker.git lbr"
 
       - name: Generate pkgrel
         working-directory: ./lbr
@@ -24,7 +24,7 @@ jobs:
           pkgrel=${PKGREL}
           pkgdesc="A tool to repack Longhorn backup files"
           arch=('any')
-          url="https://github.com/longhorn-backup-repacker"
+          url="https://github.com/thearyadev/longhorn-backup-repacker"
           license=('MIT')
           depends=('go')
           makedepends=('git')
