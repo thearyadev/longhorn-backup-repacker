@@ -8,11 +8,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Clone AUR PKGBUILD Repo
+        run: "git clone https://github.com/thearyadev/longhorn-backup-repacker.git lbr"
+
+      - name: Generate pkgrel
+        working-directory: ./lbr
+        run: "export PKGREL=$(cat PKGBUILD | grep pkgrel | awk '{print $2 + 1}')"
+
       - name: Generate PKGBUILD
         run: |
-          git clone https://aur.archlinux.org/longhorn-backup-repacker.git lbr & \
-          cd lbr & \
-          export PKGREL=$(cat PKGBUILD | grep pkgrel | awk '{print $2 + 1}') & \
           cat > PKGBUILD <<EOF
           # Maintainer: Aryan Kothari aryan@aryankothari.dev
           pkgname=longhorn-backup-repacker
