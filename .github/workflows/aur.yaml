@@ -13,7 +13,7 @@ jobs:
 
       - name: Generate pkgrel
         working-directory: ./lbr
-        run: echo "PKGREL=$(cat PKGBUILD | grep pkgrel | awk '{print $2 + 1}')" >> $GITHUB_ENV
+        run: echo "PKGREL=$(cat PKGBUILD | grep pkgrel | awk -F= '{print $2 + 1}')" >> $GITHUB_ENV
 
       - name: Generate PKGBUILD
         run: |
