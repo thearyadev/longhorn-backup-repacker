@@ -10,11 +10,14 @@ jobs:
 
       - name: Generate PKGBUILD
         run: |
+          git clone https://aur.archlinux.org/longhorn-backup-repacker.git
+          cd longhorn-backup-repacker
+          export PKGREL=$(cat PKGBUILD | grep pkgrel | awk -F= '{print $2+1}')
           cat > PKGBUILD <<EOF
           # Maintainer: Aryan Kothari aryan@aryankothari.dev
           pkgname=longhorn-backup-repacker
           pkgver=${GITHUB_REF#refs/tags/}
-          pkgrel=1
+          pkgrel=${PKGREL}
           pkgdesc="A tool to repack Longhorn backup files"
           arch=('any')
           url="https://github.com/thearyadev/longhorn-backup-repacker"
