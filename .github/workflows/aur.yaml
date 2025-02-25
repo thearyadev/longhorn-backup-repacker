@@ -24,7 +24,7 @@ jobs:
           pkgrel=${PKGREL}
           pkgdesc="A tool to repack Longhorn backup files"
           arch=('any')
-          url="https://github.com/thearyadev/longhorn-backup-repacker"
+          url="https://github.com/longhorn-backup-repacker"
           license=('MIT')
           depends=('go')
           makedepends=('git')
