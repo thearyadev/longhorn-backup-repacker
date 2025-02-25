@@ -193,7 +193,7 @@ func main() {
 	backupRoot := flag.String("backup-root", "", "Backup root directory")
 	target := flag.String("target", "", "Backup target")
 	outfile := flag.String("outfile", "", "Output file")
-	describe := flag.Bool("describe", false, "Describe backup")
+	inspect := flag.Bool("inspect", false, "inspect backup")
 	flag.Parse()
 
 	if *versionFlag {
@@ -240,7 +240,7 @@ func main() {
 	fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
 	volumeBackup, err := readBackups(volumeBackups)
 
-	if *describe {
+	if *inspect {
 		size := 0
 		fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
 		fmt.Printf("Number of Backups: %d\n", len(volumeBackup.Backups))
