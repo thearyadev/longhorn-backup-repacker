@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Clone AUR PKGBUILD Repo
-        run: "git clone https://github.com/thearyadev/longhorn-backup-repacker.git lbr"
+        run: "git clone https://aur.archlinux.org/thearyadev/longhorn-backup-repacker.git lbr"
 
       - name: Generate pkgrel
         working-directory: ./lbr
