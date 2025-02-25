@@ -13,7 +13,7 @@ jobs:
 
       - name: Generate pkgrel
         working-directory: ./lbr
-        run: "export PKGREL=$(cat PKGBUILD | grep pkgrel | awk '{print $2 + 1}')"
+        run: echo "PKGREL=$(cat PKGBUILD | grep pkgrel | awk '{print $2 + 1}')" >> $GITHUB_ENV
 
       - name: Generate PKGBUILD
         run: |
@@ -43,7 +43,7 @@ jobs:
           }
 
           package() {
-              cd "\$pkgname-\$pkgver"
+              cd "\$pkgname-\$(echo \$pkgver | sed 's/^v//')"
               sudo install -Dm755 "\$pkgname" "/usr/bin/\$pkgname"
               sudo install -Dm644 LICENSE "/usr/share/licenses/\$pkgname/LICENSE"
           }
