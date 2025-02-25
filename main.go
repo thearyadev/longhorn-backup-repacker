@@ -19,6 +19,7 @@ import (
 
 var (
 	version = "dev"
+	commit  = "none"
 )
 
 type Superblock struct {
@@ -197,6 +198,7 @@ func main() {
 
 	if *versionFlag {
 		fmt.Printf("Version: %s\n", version)
+		fmt.Printf("Commit: %s\n", commit)
 		os.Exit(0)
 	}
 
