@@ -26,8 +26,8 @@ jobs:
           arch=('any')
           url="https://github.com/thearyadev/longhorn-backup-repacker"
           license=('MIT')
-          depends=('go')
-          makedepends=('git')
+          depends=()
+          makedepends=('git' 'go')
           _commit=${{ github.sha }}
 
           source=("\$pkgname-\$pkgver.tar.gz::https://github.com/thearyadev/\$pkgname/archive/\$pkgver.tar.gz")
@@ -45,8 +45,8 @@ jobs:
 
           package() {
               cd "\$pkgname-\${pkgver#v}"
-              sudo install -Dm755 "\$pkgname" "/usr/bin/\$pkgname"
-              sudo install -Dm644 LICENSE "/usr/share/licenses/\$pkgname/LICENSE"
+              install -Dm755 "\$pkgname" "\$pkgdir/usr/bin/\$pkgname"
+              install -Dm644 LICENSE "/usr/share/licenses/\$pkgname/LICENSE"
           }
           EOF
 
