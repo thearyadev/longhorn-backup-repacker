@@ -192,6 +192,7 @@ func main() {
 	backupRoot := flag.String("backup-root", "", "Backup root directory")
 	target := flag.String("target", "", "Backup target")
 	outfile := flag.String("outfile", "", "Output file")
+	describe := flag.Bool("describe", false, "Describe backup")
 	flag.Parse()
 
 	if *versionFlag {
@@ -222,6 +223,42 @@ func main() {
 		os.Exit(1)
 	}
 
+
+	fmt.Printf("Looking for backups in %s\n", backupStorePath)
+	volumeBackups, err := findVolumeBackupPath(backupStorePath, *target)
+	if err != nil {
+		fmt.Printf("Failed to find backups for %s\n", *target)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
+	volumeBackup, err := readBackups(volumeBackups)
+
+	if *describe {
+		size := 0
+		fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
+		fmt.Printf("Number of Backups: %d\n", len(volumeBackup.Backups))
+		for _, backup := range volumeBackup.Backups {
+			fmt.Printf("Backup: %s\n", backup.Identifier)
+			fmt.Printf("Created: %s\n", backup.Timestamp)
+			fmt.Printf("Size: %d\n", backup.Size)
+			fmt.Printf("Compression: %s\n", backup.Compression)
+			for _, block := range backup.Blocks {
+				fmt.Printf("[block] Checksum: %s; Offset: %d\n", block.Checksum, block.Offset)
+				size += 2
+			}
+		}
+		fmt.Printf("Approximate Cumulative Size: %dmb", size)
+		os.Exit(0)
+	}
+
+
+
+	if err != nil {
+		fmt.Printf("Failed to read backups for %s\n", *target)
+		os.Exit(1)
+	}
+
 	if _, err := os.Stat(filepath.Dir(*outfile)); os.IsNotExist(err) {
 		fmt.Printf("Output directory for %s does not exist\n", *outfile)
 		os.Exit(1)
@@ -246,19 +283,6 @@ func main() {
 	defer outfile_descriptor.Close()
 	if err != nil {
 		fmt.Printf("Failed to create output file %s\n", *outfile)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Looking for backups in %s\n", backupStorePath)
-	volumeBackups, err := findVolumeBackupPath(backupStorePath, *target)
-	if err != nil {
-		fmt.Printf("Failed to find backups for %s\n", *target)
-		os.Exit(1)
-	}
-	fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
-	volumeBackup, err := readBackups(volumeBackups)
-	if err != nil {
-		fmt.Printf("Failed to read backups for %s\n", *target)
 		os.Exit(1)
 	}
 	for i_backup, backup := range volumeBackup.Backups {
