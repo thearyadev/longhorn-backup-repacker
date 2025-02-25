@@ -28,7 +28,7 @@ jobs:
           license=('MIT')
           depends=('go')
           makedepends=('git')
-          _commit=${{ github.head_ref }}.${{ github.sha }}
+          _commit=${{ github.sha }}
 
           source=("\$pkgname-\$pkgver.tar.gz::https://github.com/thearyadev/\$pkgname/archive/\$pkgver.tar.gz")
           sha256sums=('SKIP')
