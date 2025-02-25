@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/tar"
 	"bytes"
 	"compress/gzip"
 	"encoding/binary"
@@ -202,7 +203,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *backupRoot == "" || *target == "" || *outfile == "" {
+	if *backupRoot == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -225,6 +226,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *target == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	fmt.Printf("Looking for backups in %s\n", backupStorePath)
 	volumeBackups, err := findVolumeBackupPath(backupStorePath, *target)
@@ -261,8 +266,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *outfile == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	if _, err := os.Stat(filepath.Dir(*outfile)); os.IsNotExist(err) {
 		fmt.Printf("Output directory for %s does not exist\n", *outfile)
+		flag.Usage()
 		os.Exit(1)
 	}
 
