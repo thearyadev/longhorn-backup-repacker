@@ -33,17 +33,18 @@ jobs:
           sha256sums=('SKIP')
 
           build() {
-              cd "\$pkgname-\$pkgver"
+              cd "\$pkgname-\${pkgver#v}"
               export CGO_CPPFLAGS="${CPPFLAGS}"
               export CGO_CFLAGS="${CFLAGS}"
               export CGO_CXXFLAGS="${CXXFLAGS}"
               export CGO_LDFLAGS="${LDFLAGS}"
               export GOFLAGS="-buildmode=pie -trimpath -ldflags=-linkmode=external -mod=readonly -modcacherw"
               go build -o \$pkgname  "-X main.version=\$pkgver (aur)" .
+              go build -ldflags="-X main.version=\$pkgver" -o "\$pkgname" .
           }
 
           package() {
-              cd "\$pkgname-\$(echo \$pkgver | sed 's/^v//')"
+              cd "\$pkgname-\${pkgver#v}"
               sudo install -Dm755 "\$pkgname" "/usr/bin/\$pkgname"
               sudo install -Dm644 LICENSE "/usr/share/licenses/\$pkgname/LICENSE"
           }
