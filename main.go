@@ -134,9 +134,10 @@ func readBackups(path string) (*VolumeBackup, error) {
 			return nil, err
 		}
 
+		fmt.Printf("time %s\n", cfg.CreatedTime)
 		timestamp, err := time.Parse(time.RFC3339, cfg.CreatedTime)
 		if err != nil {
-			return nil, err
+			timestamp = time.Now()
 		}
 
 		size, err := strconv.Atoi(cfg.Size)
@@ -240,6 +241,12 @@ func main() {
 	fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
 	volumeBackup, err := readBackups(volumeBackups)
 
+	if err != nil {
+		fmt.Printf("Failed to read backups for %s\n", *target)
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(1)
+	}
+
 	if *inspect {
 		size := 0
 		fmt.Printf("Found backups for %s at %s\n", *target, volumeBackups)
@@ -256,13 +263,6 @@ func main() {
 		}
 		fmt.Printf("Approximate Cumulative Size: %dmb", size)
 		os.Exit(0)
-	}
-
-
-
-	if err != nil {
-		fmt.Printf("Failed to read backups for %s\n", *target)
-		os.Exit(1)
 	}
 
 	if *outfile == "" {
